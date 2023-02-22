@@ -9,10 +9,9 @@ void OnInit(SKSE::MessagingInterface::Message* a_msg)
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
-            if (auto settings = Settings::GetSingleton(); settings->npcWeights && settings->autoUpdateWeights) {
-				logger::info("AutoUpdateNPCWeights : true");
-                if (const auto setting = RE::INISettingCollection::GetSingleton()->GetSetting("bUseFaceGenPreprocessedHeads:General")) {
-					setting->data.b = false;
+			if (const auto settings = Settings::GetSingleton(); settings->npcWeights && settings->autoUpdateWeights) {
+				if (const auto setting = RE::INISettingCollection::GetSingleton()->GetSetting("bUseFaceGenPreprocessedHeads:General")) {
+					logger::info("AutoUpdateNPCWeights : {}", setting->GetBool());
 				}
 			}
 		}
