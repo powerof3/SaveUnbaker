@@ -86,7 +86,7 @@ namespace Hooks
 		void Install()
 		{
 			if (Settings::GetSingleton()->persistentTransforms) {
-				logger::info("Persistent Transforms : true");
+				logger::info("PersistentTransforms : true");
 
 			    REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(34808, 35717) };
 				stl::write_thunk_call<SetAngleOnReference>(target.address() + OFFSET(0x3BE, 0x3D4));
@@ -97,7 +97,9 @@ namespace Hooks
 
 	void Install()
 	{
-		Character::Install();
+		logger::info("{:*^30}", "HOOKS");
+
+	    Character::Install();
 		NPC::Install();
 		ObjectREFR::Install();
 	}
