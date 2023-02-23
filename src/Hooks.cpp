@@ -5,14 +5,33 @@ namespace Hooks
 {
 	namespace Character
 	{
-		// Unbake weights
+		struct LoadGame
+		{
+			static void thunk(RE::Character* a_this, std::uintptr_t a_buf)
+			{
+				const auto npc = a_this->GetActorBase();
+			    const auto weight = npc->weight;
+
+				func(a_this, a_buf);
+
+				if (npc->weight != weight) {
+					if (const auto biped = a_this->GetBiped()) {
+						biped->RemoveAllParts();
+					}
+				    npc->weight = weight;
+				}
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+			static inline constexpr std::size_t size{ 0x0F };
+		};
+
+	    // Unbake weights
 		void Install()
 		{
 			if (Settings::GetSingleton()->npcWeights) {
 				logger::info("NPCWeights : true");
 
-			    REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(36642, 37650), OFFSET(0x373, 0x312) };
-				REL::safe_write(target.address(), REL::NOP8, sizeof(REL::NOP8));
+			    stl::write_vfunc<RE::Character, LoadGame>();
 			}
 		}
 	}
