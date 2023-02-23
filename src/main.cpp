@@ -7,15 +7,6 @@ void OnInit(SKSE::MessagingInterface::Message* a_msg)
 	case SKSE::MessagingInterface::kPostLoad:
 		Hooks::Install();
 		break;
-	case SKSE::MessagingInterface::kDataLoaded:
-		{
-			if (const auto settings = Settings::GetSingleton(); settings->npcWeights && settings->autoUpdateWeights) {
-				if (const auto setting = RE::INISettingCollection::GetSingleton()->GetSetting("bUseFaceGenPreprocessedHeads:General")) {
-					logger::info("AutoUpdateNPCWeights : {}", setting->GetBool());
-				}
-			}
-		}
-		break;
 	default:
 		break;
 	}

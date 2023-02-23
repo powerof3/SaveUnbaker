@@ -10,7 +10,6 @@ public:
 	}
 
 	bool npcWeights{ true };
-	bool autoUpdateWeights{ true };
 	bool oppositeGenderAnims{ true };
 	bool persistentTransforms{ true };
 
