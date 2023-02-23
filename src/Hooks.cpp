@@ -10,15 +10,17 @@ namespace Hooks
 			static void thunk(RE::Character* a_this, std::uintptr_t a_buf)
 			{
 				const auto npc = a_this->GetActorBase();
-			    const auto weight = npc->weight;
+			    const auto weight = npc ? npc->weight : -1.0f;
 
 				func(a_this, a_buf);
 
-				if (npc->weight != weight) {
-					if (const auto biped = a_this->GetBiped()) {
-						biped->RemoveAllParts();
+				if (npc && weight != -1.0f) {
+					if (npc->weight != weight) {
+						if (const auto biped = a_this->GetBiped()) {
+							biped->RemoveAllParts();
+						}
+						npc->weight = weight;
 					}
-				    npc->weight = weight;
 				}
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
