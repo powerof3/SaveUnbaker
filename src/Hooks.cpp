@@ -5,35 +5,32 @@ namespace Hooks
 {
 	namespace Character
 	{
-		struct LoadGame
+		struct LoadDataEndian
 		{
-			static void thunk(RE::Character* a_this, std::uintptr_t a_buf)
+			static void thunk(RE::BGSLoadFormBuffer* a_this, void* a_dataOut, std::uint32_t a_len, std::uint32_t a_len2)
 			{
-				const auto npc = a_this->GetActorBase();
-			    const auto weight = npc ? npc->weight : -1.0f;
-
-				func(a_this, a_buf);
-
-				if (npc && weight != -1.0f) {
-					if (npc->weight != weight) {
-						if (const auto biped = a_this->GetBiped()) {
-							biped->RemoveAllParts();
-						}
-						npc->weight = weight;
-					}
+				if (a_this->formID == 0x14 || !a_this->form) {
+					return func(a_this, a_dataOut, a_len, a_len);
 				}
-			}
+                const auto actor = a_this->form->As<RE::Character>();
+                if (const auto npc = actor ? actor->GetActorBase() : nullptr) {
+					std::memcpy(a_dataOut, &npc->weight, a_len);
+					a_this->bufferPosition += a_len;
+                    return;
+                }
+				return func(a_this, a_dataOut, a_len, a_len2);
+            }
 			static inline REL::Relocation<decltype(thunk)> func;
-			static inline constexpr std::size_t size{ 0x0F };
 		};
 
-	    // Unbake weights
+		// Unbake weights
 		void Install()
 		{
 			if (Settings::GetSingleton()->npcWeights) {
 				logger::info("NPCWeights : true");
 
-			    stl::write_vfunc<RE::Character, LoadGame>();
+				REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(36642, 37650) };
+				stl::write_thunk_call<LoadDataEndian>(target.address() + OFFSET(0x323, 0x2C2));
 			}
 		}
 	}
@@ -45,7 +42,7 @@ namespace Hooks
 		{
 			using Flag = RE::ACTOR_BASE_DATA::Flag;
 
-			static void thunk(RE::TESNPC* a_this, std::uintptr_t a_buf)
+			static void thunk(RE::TESNPC* a_this, RE::BGSLoadFormBuffer* a_buf)
 			{
 				const auto flags = a_this->actorData.actorBaseFlags;
 
@@ -66,7 +63,7 @@ namespace Hooks
 			if (Settings::GetSingleton()->oppositeGenderAnims) {
 				logger::info("OppositeGenderAnimsFlag : true");
 
-			    stl::write_vfunc<RE::TESNPC, LoadGame>();
+				stl::write_vfunc<RE::TESNPC, LoadGame>();
 			}
 		}
 	}
@@ -109,7 +106,7 @@ namespace Hooks
 			if (Settings::GetSingleton()->persistentTransforms) {
 				logger::info("PersistentTransforms : true");
 
-			    REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(34808, 35717) };
+				REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(34808, 35717) };
 				stl::write_thunk_call<SetAngleOnReference>(target.address() + OFFSET(0x3BE, 0x3D4));
 				stl::write_thunk_call<SetLocationOnReference>(target.address() + OFFSET(0x3CA, 0x3E0));
 			}
@@ -120,7 +117,7 @@ namespace Hooks
 	{
 		logger::info("{:*^30}", "HOOKS");
 
-	    Character::Install();
+		Character::Install();
 		NPC::Install();
 		ObjectREFR::Install();
 	}
