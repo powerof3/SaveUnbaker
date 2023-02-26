@@ -75,7 +75,16 @@ namespace Hooks
 		{
 			static bool is_persistent_immovable(RE::TESObjectREFR* a_refr)
 			{
-				return a_refr->IsPersistent() && !a_refr->CanBeMoved();
+				if (a_refr->IsPersistent()) {
+					if (!a_refr->CanBeMoved()) {
+						return true;
+					}
+					const auto base = a_refr->GetBaseObject(); 
+				    if (base && base->Is(RE::FormType::Door)) {
+						return true;
+					}
+				}
+				return false;
 			}
 		};
 
