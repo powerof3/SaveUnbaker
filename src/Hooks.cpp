@@ -10,16 +10,17 @@ namespace Hooks
 			static void thunk(RE::BGSLoadFormBuffer* a_this, void* a_dataOut, std::uint32_t a_len, std::uint32_t a_len2)
 			{
 				if (a_this->formID == 0x14 || !a_this->form) {
-					return func(a_this, a_dataOut, a_len, a_len);
+					func(a_this, a_dataOut, a_len, a_len);
+					return;
 				}
-                const auto actor = a_this->form->As<RE::Character>();
-                if (const auto npc = actor ? actor->GetActorBase() : nullptr) {
+				const auto actor = a_this->form->As<RE::Character>();
+				if (const auto npc = actor ? actor->GetActorBase() : nullptr) {
 					std::memcpy(a_dataOut, &npc->weight, a_len);
 					a_this->bufferPosition += a_len;
-                    return;
-                }
-				return func(a_this, a_dataOut, a_len, a_len2);
-            }
+					return;
+				}
+				func(a_this, a_dataOut, a_len, a_len2);
+			}
 			static inline REL::Relocation<decltype(thunk)> func;
 		};
 
@@ -27,10 +28,10 @@ namespace Hooks
 		void Install()
 		{
 			if (Settings::GetSingleton()->npcWeights) {
-				logger::info("NPCWeights : true");
+				REX::INFO("bNPCWeights : true");
 
-				REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(36642, 37650) };
-				stl::write_thunk_call<LoadDataEndian>(target.address() + OFFSET(0x323, 0x2C2));
+				REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(36642, 37650), OFFSET(0x323, 0x2C2) };
+				stl::write_thunk_call<LoadDataEndian>(target.address());
 			}
 		}
 	}
@@ -55,13 +56,13 @@ namespace Hooks
 				}
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
-			static inline constexpr std::size_t size{ 0x0F };
+			static constexpr std::size_t size{ 0x0F };
 		};
 
 		void Install()
 		{
 			if (Settings::GetSingleton()->oppositeGenderAnims) {
-				logger::info("OppositeGenderAnimsFlag : true");
+				REX::INFO("bOppositeGenderAnimsFlag : true");
 
 				stl::write_vfunc<RE::TESNPC, LoadGame>();
 			}
@@ -79,8 +80,8 @@ namespace Hooks
 					if (!a_refr->CanBeMoved()) {
 						return true;
 					}
-					const auto base = a_refr->GetBaseObject(); 
-				    if (base && base->Is(RE::FormType::Door)) {
+					const auto base = a_refr->GetBaseObject();
+					if (base && base->Is(RE::FormType::Door)) {
 						return true;
 					}
 				}
@@ -113,18 +114,20 @@ namespace Hooks
 		void Install()
 		{
 			if (Settings::GetSingleton()->persistentTransforms) {
-				logger::info("PersistentTransforms : true");
+				REX::INFO("bPersistentTransforms : true");
 
-				REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(34808, 35717) };
-				stl::write_thunk_call<SetAngleOnReference>(target.address() + OFFSET(0x3BE, 0x3D4));
-				stl::write_thunk_call<SetLocationOnReference>(target.address() + OFFSET(0x3CA, 0x3E0));
+				REL::Relocation<std::uintptr_t> target{ RELOCATION_ID_VERSIONED(34808, 35717, 523922) };
+				stl::write_thunk_call<SetAngleOnReference>(target.address() + OFFSET_VERSIONED(0x3BE, 0x3D4, 0x3F3));
+				stl::write_thunk_call<SetLocationOnReference>(target.address() + OFFSET_VERSIONED(0x3CA, 0x3E0, 0x3FF));
 			}
 		}
 	}
 
 	void Install()
 	{
-		logger::info("{:*^30}", "HOOKS");
+		REX::INFO("{:*^30}", "HOOKS");
+
+		Settings::GetSingleton()->LoadSettings();
 
 		Character::Install();
 		NPC::Install();

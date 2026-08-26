@@ -71,6 +71,26 @@ else ()
 	)
 endif ()
 
+set(VCPKG_OVERLAY_PORTS "")
+
+if(DEFINED ENV{CommonLibSSEPath})
+	file(TO_CMAKE_PATH "$ENV{CommonLibSSEPath}" CLIB_SOURCE_DIR)
+endif()
+
+if(CLIB_SOURCE_DIR AND EXISTS "${CLIB_SOURCE_DIR}/cmake/ports/commonlib-shared/portfile.cmake")
+	list(APPEND VCPKG_OVERLAY_PORTS "${CLIB_SOURCE_DIR}/cmake/ports")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/extern/CommonLibSSE/cmake/ports/commonlib-shared/portfile.cmake")
+	list(APPEND VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/extern/CommonLibSSE/cmake/ports")
+else()
+	message(FATAL_ERROR "commonlib-shared overlay port not found in any CommonLibSSE checkout")
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ports")
+	list(APPEND VCPKG_OVERLAY_PORTS "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ports")
+endif()
+
+message(STATUS "vcpkg overlay ports: ${VCPKG_OVERLAY_PORTS}")
+
 set(Boost_USE_STATIC_RUNTIME OFF CACHE BOOL "")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "")
 
@@ -133,8 +153,6 @@ else ()
 	)
 endif()
 
-find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/detail/SimpleIni.h")
-
 # ---- Add source files ----
 
 include(cmake/headerlist.cmake)
@@ -186,7 +204,6 @@ target_include_directories(
 		${CMAKE_CURRENT_BINARY_DIR}/include
 		${CMAKE_CURRENT_SOURCE_DIR}/src
 		${CommonLibPath}/x64/Release
-		${CLIB_UTIL_INCLUDE_DIRS}
 )
 
 target_link_libraries(

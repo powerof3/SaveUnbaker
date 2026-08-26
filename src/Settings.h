@@ -1,18 +1,14 @@
 #pragma once
 
-class Settings
+class Settings : public REX::TSingleton<Settings>
 {
 public:
-	[[nodiscard]] static Settings* GetSingleton()
-	{
-		static Settings singleton;
-		return std::addressof(singleton);
-	}
+	void LoadSettings();
 
-	bool npcWeights{ true };
-	bool oppositeGenderAnims{ true };
-	bool persistentTransforms{ true };
+	// members
+	static constexpr auto path = "Data/SKSE/Plugins/po3_SaveUnbaker.ini"sv;
 
-private:
-	Settings();
+	REX::TIniSetting<bool> npcWeights{ "Settings", "bNPCWeights", true };
+	REX::TIniSetting<bool> oppositeGenderAnims{ "Settings", "bOppositeGenderAnimsFlag", true };
+	REX::TIniSetting<bool> persistentTransforms{ "Settings", "bPersistentRefTransforms", true };
 };
