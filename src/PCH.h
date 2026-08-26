@@ -45,7 +45,7 @@ namespace Runtime
 #ifdef SKYRIM_AE
 #	define OFFSET(se, ae) ae
 #	define OFFSET_VERSIONED(se, ae, ae1799) \
-		Runtime::IsAtLeast1_7_99() ? ae1799 : ae
+		(Runtime::IsAtLeast1_7_99() ? (ae1799) : (ae))
 #	define RELOCATION_ID_VERSIONED(se, ae, ae1799) \
 		REL::ID(Runtime::IsAtLeast1_7_99() ? (ae1799) : (ae))
 #else
